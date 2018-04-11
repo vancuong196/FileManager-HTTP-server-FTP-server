@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/item_frame"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
+
+    <RelativeLayout
+        android:id="@+id/item_holder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingRight="10dp"
+        android:paddingLeft="10dp"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        >
+
+        <ImageView
+            android:background="@drawable/round"
+            android:id="@+id/item_icon"
+            android:layout_width="@dimen/normal_icon_size"
+            android:layout_height="@dimen/normal_icon_size"
+            android:padding="@dimen/small_margin"
+            android:src="@drawable/folder_icon"/>
+
+        <TextView
+            android:id="@+id/item_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/item_icon"
+            android:layout_toRightOf="@+id/item_icon"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingLeft="@dimen/small_margin"
+            android:paddingTop="@dimen/small_margin"
+            tools:text="Directory"/>
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_below="@+id/item_name"
+    android:layout_toRightOf="@+id/item_icon"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_weight="1"
+            android:id="@+id/tv_item_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/small_margin"
+            android:textSize="@dimen/smaller_text_size"
+            tools:text="Feb 26, 22:44"/>
+    <TextView
+        android:gravity="right"
+        android:paddingRight="@dimen/medium_margin"
+        android:layout_weight="1"
+        android:id="@+id/tv_item_size"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/small_margin"
+        android:textSize="@dimen/smaller_text_size"
+        tools:text="101 items"/>
+    </LinearLayout>
+
+</LinearLayout>
+
+    </RelativeLayout>
+    <LinearLayout
+        android:background="#30696969"
+        android:layout_gravity="bottom"
+        android:layout_width="match_parent"
+        android:gravity="bottom"
+        android:layout_height="1dp">
+    </LinearLayout>
+</FrameLayout>

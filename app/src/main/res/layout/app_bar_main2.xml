@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context="com.cuong.filemanage.MainActivity">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+    </android.support.design.widget.AppBarLayout>
+
+    <include layout="@layout/content_main2" />
+    <LinearLayout
+        android:background="#a9a9a9"
+        android:orientation="horizontal"
+        android:layout_gravity="bottom"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize">
+        <ImageButton
+            android:layout_gravity="center"
+            android:background="@drawable/round_transparent"
+            android:layout_weight="1"
+            android:id="@+id/slideMenuButton1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_input_add" />
+        <ImageButton
+            android:layout_gravity="center"
+            android:background="@drawable/round_transparent"
+            android:layout_weight="1"
+            android:id="@+id/slideMenuButton2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_delete" />
+        <ImageButton
+            android:layout_gravity="center"
+            android:background="@drawable/round_transparent"
+            android:layout_weight="1"
+            android:id="@+id/slideMenuButton3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_sort_by_size" />
+        <ImageButton
+            android:layout_gravity="center"
+            android:background="@drawable/round_transparent"
+            android:layout_weight="1"
+            android:id="@+id/slideMenuButton4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_send" />
+        <ImageButton
+            android:layout_gravity="center"
+            android:background="@drawable/round_transparent"
+            android:layout_weight="1"
+            android:id="@+id/slideMenuButton5"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_recent_history" />
+        <ImageButton
+            android:layout_gravity="center"
+            android:background="@drawable/round_transparent"
+            android:layout_weight="1"
+            android:id="@+id/slideMenuButton6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_recent_history" />
+    </LinearLayout>
+</android.support.design.widget.CoordinatorLayout>

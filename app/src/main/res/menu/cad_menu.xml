@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+    <item android:title="One"
+        android:id="@+id/cab_copy"
+        android:icon="@android:drawable/ic_delete"
+        app:showAsAction="always"/>
+    <item android:title="copy"
+        android:id="@+id/cab_move"
+        android:icon="@android:drawable/ic_menu_edit"
+        app:showAsAction="always"/>
+    <item android:title="copy"
+        android:id="@+id/cab_delete"
+        android:icon="@android:drawable/ic_menu_edit"
+        app:showAsAction="always"/>
+    <item android:title="Delete"
+        android:id="@+id/cab_three"
+        app:showAsAction="never">
+        <menu>
+            <item android:title="Submenu One"
+                android:id="@+id/sub_one"/>
+            <item android:title="Submenu Two"
+                android:id="@+id/sub_two"/>
+        </menu>
+    </item>
+    <item android:title="Four" android:id="@+id/cab_four" app:showAsAction="never"/>
+</menu>

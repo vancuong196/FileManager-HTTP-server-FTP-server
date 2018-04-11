@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/item_frame"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    >
+
+    <RelativeLayout
+        android:id="@+id/item_holder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingRight="10dp"
+        android:paddingLeft="10dp"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        >
+
+        <ImageView
+            android:layout_centerVertical="true"
+            android:background="@drawable/round"
+            android:id="@+id/item_icon2"
+            android:layout_width="@dimen/normal_icon_size"
+            android:layout_height="@dimen/normal_icon_size"
+            android:padding="@dimen/small_margin"
+            android:src="@drawable/folder_icon"/>
+
+        <TextView
+            android:id="@+id/item_name2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/item_icon2"
+            android:layout_toRightOf="@+id/item_icon2"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingLeft="@dimen/small_margin"
+            android:paddingTop="3dp"
+            android:text="sdcard1"
+
+            />
+        <TextView
+            android:layout_below="@+id/item_name2"
+            android:layout_toRightOf="@+id/item_icon2"
+            android:paddingRight="@dimen/medium_margin"
+            android:layout_weight="1"
+            android:id="@+id/tv_item_size2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/small_margin"
+            android:textSize="8sp"
+            tools:text="101 items"/>
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_below="@+id/tv_item_size2"
+            android:layout_toRightOf="@+id/item_icon2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_weight="1"
+                    android:id="@+id/tv_item_path2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/small_margin"
+                    android:textSize="8sp"
+                    tools:text="Feb 26, 22:44"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</FrameLayout>
