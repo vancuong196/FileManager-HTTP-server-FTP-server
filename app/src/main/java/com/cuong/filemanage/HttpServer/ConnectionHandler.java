@@ -59,9 +59,7 @@ public class ConnectionHandler extends Thread {
                         out.println("HTTP/1.0 200 OK");
                         out.println("Content-Type: " + "application/octet-stream");
                         out.println("Content-Length: " + bytes.length);
-                        out.append('\r').append('\n').flush();
-                        out.write(bytes);
-                        out.append('\r').append('\n').flush();
+                        writeFileToStream(out,"/"+directory);
                         out.flush();
                         break;
                     }
@@ -89,7 +87,21 @@ public class ConnectionHandler extends Thread {
         System.out.println("File lenght" +fileName.length());
         return fileData;
     }
+    public void writeFileToStream(PrintStream out, String fileName) throws IOException {
+        File file = new File(fileName);
+        byte[] fileData = new byte[1024];
+        DataInputStream dis = new DataInputStream(new FileInputStream(file));
+        out.println("Content-Length: " + file.length());
+        out.append('\r').append('\n').flush();
+        while (dis.read(fileData)>0) {
+            out.write(fileData);
+        }
 
+        out.append('\r').append('\n').flush();
+        dis.close();
+        System.out.println("File lenght" +fileName.length());
+
+    }
     public ConnectionHandler(Socket sk) {
         this.mConnection = sk;
         mConnectionManager = ConnectionManager.getInstance();

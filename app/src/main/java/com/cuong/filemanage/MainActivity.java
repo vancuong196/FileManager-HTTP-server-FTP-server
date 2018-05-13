@@ -1,8 +1,6 @@
 package com.cuong.filemanage;
 
 import android.content.Intent;
-import android.content.res.AssetManager;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -22,7 +20,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -39,35 +36,20 @@ import static android.os.Build.VERSION.SDK_INT;
 
 public class MainActivity extends AppCompatActivity {
     String mCurrentPath;
-    String mPrevious;
+    String mCurrentRoot;
     ListView mLvFile;
     ArrayList<FileModel> mFileList;
     ListAdapter mAdapter;
-    Adapter2 adapter2;
     private boolean isAddFour = false;
     private boolean isRemoveFour = false;
-    ListView listView2;
-    HttpServer mServer;
-    Spinner spinner;
-    ArrayList<DirectoryModel> directoryModels;
     String TAG = "DEbug_Info";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main2);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setContentView(R.layout.activity_main);
+        //Toolbar toolbar = findViewById(R.id.toolbar);
+        //setSupportActionBar(toolbar);
 
-        AssetManager assetManager = getAssets();
-        mServer = new HttpServer(9999, assetManager);
-        mServer.start();
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         final SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.sw_layout);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -77,13 +59,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         init();
-        init2();
         init3();
     }
     public void init(){
             mLvFile = findViewById(R.id.lv_file);
-            mPrevious=mCurrentPath = Environment.getExternalStorageDirectory().toString();
-
             mFileList = FileManager.getFileList( Environment.getExternalStorageDirectory().toString());
             mAdapter =new ListAdapter(this,R.layout.list_item,mFileList);
             mLvFile.setAdapter(mAdapter);
@@ -92,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     if (mAdapter.getItem(position).getType()==Constants.FOLDER_TYPE){
                         System.out.println("debug");
-
+                        mCurrentPath = mAdapter.getItem(position).getPath();
                         refresh(mAdapter.getItem(position).getPath());
                     }
                     else {
@@ -101,28 +80,31 @@ public class MainActivity extends AppCompatActivity {
                     }}
             });
             mLvFile.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-            mLvFile.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
-                //            called when an item is checked/unchecked during selection mode
+            mLvFile.setMultiChoiceModeListener(new ListView.MultiChoiceModeListener() {
+
                 @Override
                 public void onItemCheckedStateChanged(ActionMode mode,
                                                       int position, long id, boolean checked) {
                     mode.setTitle(mLvFile.getCheckedItemCount()
                             + " items");
+                    SparseBooleanArray a =mLvFile.getCheckedItemPositions();
+                    if (a.get(position)){
+                        mAdapter.getItem(position).setSelected(true);
+                    } else {
+                        mAdapter.getItem(position).setSelected(false);
+                    }
+
                 }
 
-                /* called when the action mode is first created.
-                 The supplied menu is used for action buttons*/
                 @Override
                 public boolean onCreateActionMode(ActionMode mode, Menu menu) {
                     Log.i(TAG, "creating action mode");
                     MenuInflater inflater = mode.getMenuInflater();
-                    getSupportActionBar().hide();
+                   // getSupportActionBar().hide();
                     inflater.inflate(R.menu.cad_menu, menu);
-                    menu.findItem(R.id.cab_four).setVisible(false);
                     return true;
                 }
 
-                //called to refresh action mode action menu whenever it is invalidated
                 @Override
                 public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
                     Log.i(TAG, "preparing action mode");
@@ -193,98 +175,45 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onDestroyActionMode(ActionMode mode) {
                     Log.i(TAG, "destroying action mode");
-                    getSupportActionBar().show();
+                 //   getSupportActionBar().show();
                     isRemoveFour = false;
                     isAddFour = false;
                 }
             });
             System.out.println(getStorageDirectories());
     }
-    public void init2(){
-        listView2 = findViewById(R.id.lv_dir_navigation);
-        directoryModels = new ArrayList<>();
-        ArrayList<String> s = getStorageDirectories();
-        for (int i=0; i< s.size();i++){
-            File file = new File(s.get(i));
-            String size = Utils.size(file.getTotalSpace());
-            String path = file.getPath();
-            String name = file.getName();
 
-            directoryModels.add(new DirectoryModel(name,path,size));
-        }
-        adapter2 = new Adapter2(this,R.layout.list_item2,directoryModels);
-        listView2.setAdapter(adapter2);
-        listView2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String path=adapter2.getItem(position).getPath();
-                refresh(path);
-            }
-        });
-    }
     public void init3(){
         Spinner spinner = findViewById(R.id.spinner);
         ArrayList<String> s = getStorageDirectories();
-        ArrayAdapter arrayAdapter = new ArrayAdapter(this,R.layout.support_simple_spinner_dropdown_item,s);
+        final ArrayAdapter arrayAdapter = new ArrayAdapter(this,R.layout.support_simple_spinner_dropdown_item,s);
         spinner.setAdapter(arrayAdapter);
         spinner.setSelection(0);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                mCurrentPath= mCurrentRoot = (String)arrayAdapter.getItem(position);
+                refresh((String)arrayAdapter.getItem(position));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
-    public static final Pattern DIR_SEPARATOR = Pattern.compile("/");
     public synchronized ArrayList<String> getStorageDirectories() {
-        // Final set of paths
-        final ArrayList<String> rv = new ArrayList<>();
-        // Primary physical SD-CARD (not emulated)
-        final String rawExternalStorage = System.getenv("EXTERNAL_STORAGE");
-        // All Secondary SD-CARDs (all exclude primary) separated by ":"
-        final String rawSecondaryStoragesStr = System.getenv("SECONDARY_STORAGE");
-        // Primary emulated SD-CARD
-        final String rawEmulatedStorageTarget = System.getenv("EMULATED_STORAGE_TARGET");
-        if (TextUtils.isEmpty(rawEmulatedStorageTarget)) {
-            // Device has physical external storage; use plain paths.
-            if (TextUtils.isEmpty(rawExternalStorage)) {
-                // EXTERNAL_STORAGE undefined; falling back to default.
-                rv.add("/storage/sdcard0");
-            } else {
-                rv.add(rawExternalStorage);
-            }
-        } else {
-            // Device has emulated storage; external storage paths should have
-            // userId burned into them.
-            final String rawUserId;
-            if (SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                rawUserId = "";
-            } else {
-                final String path = Environment.getExternalStorageDirectory().getAbsolutePath();
-                final String[] folders = DIR_SEPARATOR.split(path);
-                final String lastFolder = folders[folders.length - 1];
-                boolean isDigit = false;
-                try {
-                    Integer.valueOf(lastFolder);
-                    isDigit = true;
-                } catch (NumberFormatException ignored) {
-                }
-                rawUserId = isDigit ? lastFolder : "";
-            }
-            // /storage/emulated/0[1,2,...]
-            if (TextUtils.isEmpty(rawUserId)) {
-                rv.add(rawEmulatedStorageTarget);
-            } else {
-                rv.add(rawEmulatedStorageTarget + File.separator + rawUserId);
-            }
+        File[] list = list = getApplicationContext().getExternalFilesDirs(null);
+        ArrayList<String> storages =new ArrayList<>();
+        for (File aList : list) {
+            System.out.println("Path----------------" + aList.getParentFile().getParentFile().getParentFile().getParentFile().getPath());
+            storages.add(aList.getParentFile().getParentFile().getParentFile().getParentFile().getPath());
         }
-        // Add all secondary storages
-        if (!TextUtils.isEmpty(rawSecondaryStoragesStr)) {
-            // All Secondary SD-CARDs splited into array
-            final String[] rawSecondaryStorages = rawSecondaryStoragesStr.split(File.pathSeparator);
-            Collections.addAll(rv, rawSecondaryStorages);
-        }
-
-
-        return rv;
+        return storages;
     }
+
 
     public void refresh(String path) {
-        mPrevious = mCurrentPath;
         mCurrentPath = path;
         mFileList = FileManager.getFileList(path);
         mAdapter.clear();
@@ -293,12 +222,13 @@ public class MainActivity extends AppCompatActivity {
     }
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
+        System.out.println(mCurrentPath+"  "+mCurrentRoot);
+        if (mCurrentPath.equals(mCurrentRoot)){
+            return;
         }
-        if (mPrevious!=null){
-            refresh(new File(mCurrentPath).getParent());
+        if (mCurrentPath!=null){
+            mCurrentPath = new File(mCurrentPath).getParent();
+            refresh(mCurrentPath);
         }
     }
 

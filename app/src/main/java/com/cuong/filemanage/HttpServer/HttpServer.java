@@ -18,11 +18,6 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-
-/**
- * Implementation of a very basic HTTP server. The contents are loaded from the assets folder. This
- * server handles one request at a time. It only supports GET method.
- */
 public class HttpServer implements Runnable {
 
     private static final String TAG = "HttpServer";
@@ -34,10 +29,13 @@ public class HttpServer implements Runnable {
     private boolean mIsRunning;
 
     private ServerSocket mServerSocket;
-
-    public HttpServer(int port, AssetManager assets) {
+    public boolean isRunning(){
+        return this.mIsRunning;
+    }
+    public HttpServer(int port, AssetManager assets) throws IOException {
         mPort = port;
         mAssets = assets;
+        mServerSocket = new ServerSocket(mPort);
     }
 
     public void start() {
@@ -68,7 +66,7 @@ public class HttpServer implements Runnable {
     public void run() {
         try {
 
-            mServerSocket = new ServerSocket(mPort);
+
             while (mIsRunning) {
                 Socket socket = mServerSocket.accept();
                 ConnectionManager connectionManager = ConnectionManager.getInstance();
@@ -177,14 +175,11 @@ public class HttpServer implements Runnable {
                 output.flush();
             }
             else {
-                byte[] bytes = loadContent("/"+directory);
+
                 // Send out the content.
                 output.println("HTTP/1.0 200 OK");
                 output.println("Content-Type: " + "application/octet-stream");
-                output.println("Content-Length: " + bytes.length);
-                output.append('\r').append('\n').flush();
-                output.write(bytes);
-                output.append('\r').append('\n').flush();
+                writeFileToStream(output,"/"+directory);
                 output.flush();
             }
         } finally {
@@ -214,16 +209,22 @@ public class HttpServer implements Runnable {
      * @return The content of the file.
      * @throws IOException
      */
-    private byte[] loadContent(String fileName) throws IOException {
+// change here
+    public void writeFileToStream(PrintStream out, String fileName) throws IOException {
         File file = new File(fileName);
-        byte[] fileData = new byte[(int) file.length()];
+        byte[] fileData = new byte[1024];
         DataInputStream dis = new DataInputStream(new FileInputStream(file));
-        dis.readFully(fileData);
+        out.println("Content-Length: " + file.length());
+        out.append('\r').append('\n').flush();
+        while (dis.read(fileData)>0) {
+            out.write(fileData);
+        }
+
+        out.append('\r').append('\n').flush();
         dis.close();
         System.out.println("File lenght" +fileName.length());
-        return fileData;
-    }
 
+    }
     /**
      * Detects the MIME type from the {@code fileName}.
      *

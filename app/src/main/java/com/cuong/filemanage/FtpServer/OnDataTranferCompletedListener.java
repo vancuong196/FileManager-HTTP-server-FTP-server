@@ -1,6 +1,6 @@
 package com.cuong.filemanage.FtpServer;
 
-public interface OnDataTranferCompleteListener
+public interface OnDataTranferCompletedListener
 {
 	public void actionNegoatiated(boolean isOk);
 

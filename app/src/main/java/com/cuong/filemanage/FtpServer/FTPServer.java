@@ -8,6 +8,9 @@ public class FTPServer implements Runnable
         private ServerSocket socket;
         private int port;
         boolean mIsRunning = true;
+    public boolean isRunning(){
+    	return this.mIsRunning;
+	}
 	public FTPServer(int port) throws IOException
 	{
             this.port = port;
@@ -50,6 +53,7 @@ public class FTPServer implements Runnable
 			}
 			catch( IOException e ) {}
 			this.socket = null;
+			this.mIsRunning = false;
 		}
 	}
 }

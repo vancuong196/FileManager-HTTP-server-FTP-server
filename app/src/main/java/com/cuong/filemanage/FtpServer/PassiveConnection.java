@@ -1,34 +1,54 @@
 package com.cuong.filemanage.FtpServer;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
-import java.net.HttpURLConnection;
 import java.nio.channels.ServerSocketChannel;
+import java.util.Enumeration;
+import java.util.Random;
 
 class PassiveConnection extends DataConnection
 {
-	private ServerSocketChannel socket;
-
+	private ServerSocketChannel serverSocket;
+	public InetAddress getLocalIpAddress(){
+		try {
+			for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces();
+				 en.hasMoreElements();) {
+				NetworkInterface intf = en.nextElement();
+				for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+					InetAddress inetAddress = enumIpAddr.nextElement();
+					if (!inetAddress.isLoopbackAddress()&& inetAddress instanceof Inet4Address) {
+						return inetAddress;
+					}
+				}
+			}
+		} catch (Exception ex) {
+			Log.e("IP Address", ex.toString());
+		}
+		return null;
+	}
 	PassiveConnection() throws IOException
 	{
 
-		InetAddress local = InetAddress.getByName("localhost");
-		System.out.println(local);
-		if( local.isLoopbackAddress() )
+		InetAddress local = getLocalIpAddress();
+		System.out.println(local.getHostName());
+		if( local == null )
 			throw new IOException("Can't take local ip address");
 
-		ServerSocket sock = new ServerSocket();	
+		ServerSocket testSocket = new ServerSocket();
 		int okPort = -1;
 		int errorCount = 0;
 		while(errorCount < 20)
 		{
-			int port = 4096 + (int)(Math.random() * 40000.0D);
+			int port = 4096 + new Random().nextInt(10000);
 			try
 			{
-				sock.bind( new InetSocketAddress(local, port) );
+				testSocket.bind( new InetSocketAddress(local, port) );
 				okPort = port;
 			}
 			catch( IOException e )
@@ -38,33 +58,33 @@ class PassiveConnection extends DataConnection
 			}
 			break;
 		}
-		sock.close();
+		testSocket.close();
 
-		this.addr = new InetSocketAddress(local, okPort);
-
-		socket = ServerSocketChannel.open();	
-		socket.configureBlocking(true);
-		socket.socket().setSoTimeout( 1000 * 10 );
-		socket.socket().bind(this.addr);
+		this.addr = new InetSocketAddress(local,okPort);
+		System.out.println("add  "+addr.getHostName());
+		serverSocket = ServerSocketChannel.open();
+		serverSocket.configureBlocking(true);
+		serverSocket.socket().setSoTimeout( 1000 * 30 );
+		serverSocket.socket().bind(this.addr);
 	}
-	
-	protected void doNegotiate() throws IOException
+
+	protected void makeDataTranferConnection() throws IOException
 	{
-			super.channel = socket.accept();
+			super.channel = serverSocket.accept();
 
 	}
 
 	public void stop()
 	{
 		super.stop();
-		if( socket!=null )
+		if( serverSocket !=null )
 		{
 			try 
 			{
-				socket.close();
+				serverSocket.close();
 			}
 			catch( IOException e ) {}
-			socket = null;
+			serverSocket = null;
 		}
 
 	}

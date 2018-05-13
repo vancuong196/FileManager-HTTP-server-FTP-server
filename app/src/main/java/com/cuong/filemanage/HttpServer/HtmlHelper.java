@@ -26,7 +26,7 @@ public class HtmlHelper {
         String path;
         if (mRoutePath.isEmpty()) {
            // path = Environment.getExternalStorageDirectory().toString();
-            path = "/storage/sdcard1";
+            path = "/storage/emulated/0";
         } else
         if (mRoutePath.equals("favicon.ico")){
             path = Environment.getExternalStorageDirectory().toString();
@@ -44,12 +44,12 @@ public class HtmlHelper {
 
         for (int i = 0; i < files.length; i++)
         {
-
-            String tmp= files[i].getName();
-            String tmp2 =files[i].getPath();
-            stringBuilder.append("<a href=\""+tmp2+"\">"+tmp+"</a>"+'\n');
-            stringBuilder.append("<br>"+'\n');
-
+            if (files[i].canRead()) {
+                String tmp = files[i].getName();
+                String tmp2 = files[i].getPath();
+                stringBuilder.append("<a href=\"" + tmp2 + "\">" + tmp + "</a>" + '\n');
+                stringBuilder.append("<br>" + '\n');
+            }
         }
         stringBuilder.append("</body>"+'\n'+"</html>"+'\n');
         return stringBuilder.toString();

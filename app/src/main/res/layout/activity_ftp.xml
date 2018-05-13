@@ -87,7 +87,7 @@
             android:layout_weight="4"
             android:layout_gravity="center"
             android:id="@+id/edt_ftp_path"
-            android:text="Not running"
+            android:text="/storage/emulated/0"
             android:layout_width="0dp"
             android:layout_height="wrap_content" />
     </LinearLayout>
@@ -108,7 +108,7 @@
             android:layout_weight="4"
             android:layout_gravity="center"
             android:id="@+id/edt_ftp_port"
-            android:text="Not running"
+            android:text="2121"
             android:layout_width="0dp"
             android:layout_height="wrap_content" />
 

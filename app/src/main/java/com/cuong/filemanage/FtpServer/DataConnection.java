@@ -4,7 +4,6 @@ import java.io.*;
 import java.net.*;
 import java.nio.*;
 import java.nio.channels.*;
-import java.util.*;
 
 public abstract class DataConnection implements Runnable
 {
@@ -12,8 +11,8 @@ public abstract class DataConnection implements Runnable
 	protected InetSocketAddress addr;
 	private Thread thread = null;
 
-	private boolean isNego = false;
-	private OnDataTranferCompleteListener listeners;
+	private boolean isMakeConnectionCompleted = false;
+	private OnDataTranferCompletedListener listeners;
 	private Object lock = new Object();
 	private boolean notified = false;
 	private ByteBuffer characterWriter = null;
@@ -58,22 +57,25 @@ public abstract class DataConnection implements Runnable
 	public String getAddressAsString()
 	{
 		int port = addr.getPort();
-		String[] ips = addr.getAddress().getHostAddress().split("\\.");
+
+		String[] ips = addr.getAddress().getHostName().split("\\.");
+		System.out.println(addr.getAddress().getHostAddress());
+		System.out.println(addr.getAddress().getHostName());
 		return ips[0] + "," + ips[1] + "," + ips[2] + "," + ips[3] +
 			"," + (port/256) + "," + (port%256);
 	}
 
-	public void addDataConnectionListener( OnDataTranferCompleteListener l )
+	public void addDataConnectionListener( OnDataTranferCompletedListener l )
 	{
                 listeners = l;
 	}
 
-	public void removeDataConnectionListener( OnDataTranferCompleteListener l )
+	public void removeDataConnectionListener( OnDataTranferCompletedListener l )
 	{
 		listeners = null;
 	}
 
-	protected abstract void doNegotiate() throws IOException;
+	protected abstract void makeDataTranferConnection() throws IOException;
 
 	public void start()
 	{
@@ -112,9 +114,9 @@ public abstract class DataConnection implements Runnable
 		FileChannel file = null;
 		try
 		{
-			isNego = false;
-			doNegotiate();
-			isNego = true;
+			isMakeConnectionCompleted = false;
+			makeDataTranferConnection();
+			isMakeConnectionCompleted = true;
 			listeners.actionNegoatiated(true);
 
 			synchronized(lock)
@@ -171,7 +173,7 @@ public abstract class DataConnection implements Runnable
 		}
 		catch( InterruptedException e )
 		{
-			if( !isNego )
+			if( !isMakeConnectionCompleted)
 			{
 				listeners.actionNegoatiated(false);
 			}
@@ -184,7 +186,7 @@ public abstract class DataConnection implements Runnable
 		{
 			e.printStackTrace();
 
-			if( !isNego )
+			if( !isMakeConnectionCompleted)
 			{
 				listeners.actionNegoatiated(false);
 			}
@@ -206,7 +208,7 @@ public abstract class DataConnection implements Runnable
 
 	public boolean isNegotiated()
 	{
-		return this.isNego;
+		return this.isMakeConnectionCompleted;
 	}
 
 	public void send( String msg, boolean isUTF8 ) throws IOException

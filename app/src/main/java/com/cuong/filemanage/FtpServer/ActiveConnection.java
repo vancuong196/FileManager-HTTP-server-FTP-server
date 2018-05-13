@@ -10,7 +10,7 @@ class ActiveConnection extends DataConnection
 
 	}
 	
-	protected void doNegotiate() throws IOException
+	protected void makeDataTranferConnection() throws IOException
 	{
 		channel = SocketChannel.open();
 		channel.configureBlocking(true);

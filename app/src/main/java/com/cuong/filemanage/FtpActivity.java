@@ -7,10 +7,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cuong.filemanage.FtpServer.FTPServer;
-import com.cuong.filemanage.Service.FtpServerService;
-import com.cuong.filemanage.Service.WebService;
 import com.cuong.filemanage.Ultility.Constant;
 
 import java.io.IOException;
@@ -23,10 +22,12 @@ public class FtpActivity extends AppCompatActivity {
     EditText edtPassword;
     EditText edtPath;
     EditText edtPort;
+    FTPServer ftpServer;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ftp);
+        getSupportActionBar().setTitle("FTP Server");
         initViews();
     }
     public void initViews(){
@@ -39,10 +40,48 @@ public class FtpActivity extends AppCompatActivity {
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent mIntent = new Intent(getApplication(), FtpServerService.class);
-                mIntent.setAction(Constant.ACTION_START_SERVICE);
-                startService(mIntent);
+                if (ftpServer==null){
+                    try {
+                        ftpServer= new FTPServer(Integer.parseInt(edtPort.getText().toString()));
+                        ftpServer.start();
+                    } catch (IOException e) {
+                        Toast.makeText(getApplicationContext(),"Can't start FTP server on this port",Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    tvStatus.setText("Running");
+                    btnStart.setText("Stop");
+                    return;
+                }
+                if (ftpServer.isRunning()){
+                    ftpServer.destroy();
+                    btnStart.setText("Start");
+                    tvStatus.setText("Not running");
+                    return;
+
+                }
+                if (!ftpServer.isRunning()){
+                    try {
+                        ftpServer = new FTPServer(Integer.parseInt(edtPort.getText().toString()));
+                        ftpServer.start();
+                    } catch (IOException e) {
+                        Toast.makeText(getApplicationContext(),"Cant not start FTP server",Toast.LENGTH_LONG);
+                        return;
+                    }
+                    tvStatus.setText("Running");
+                    btnStart.setText("Stop");
+                    return;
+                }
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (ftpServer!=null&&ftpServer.isRunning()){
+            ftpServer.destroy();
+            Toast.makeText(this,"FTP server stop!",Toast.LENGTH_LONG).show();
+            ftpServer = null;
+        }
+        super.onBackPressed();
     }
 }

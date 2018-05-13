@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
-public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteListener
+public class ClientConnectionHandler implements Runnable, OnDataTranferCompletedListener
 {
 	private Socket channel;
 	private Thread thread = null;
@@ -33,7 +33,7 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 	private InetSocketAddress port = null;
 
 	private File userRoot = null;
-	private File userCurrent = null;
+	private File userCurrentWokingDirectory = null;
 
 	private SimpleDateFormat fmtDate = new SimpleDateFormat("MMM dd HH:mm", Locale.ENGLISH);
 	private SimpleDateFormat fmtPast = new SimpleDateFormat("MMM dd  yyyy", Locale.ENGLISH);
@@ -243,7 +243,7 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 			println( "500 " + cmd + " not understood." );
 		}
 	}
-// The fpt server doesnt implement the security  
+
 	protected void processSecurityExtension( String param ) throws Exception
 	{
 
@@ -264,7 +264,7 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 // 
 	protected void processUser( String username ) throws Exception
 	{
-		// Anonymous는 존재하지 않는다.
+
 		this.username = username;
                 if (username.equals("anonymous")) {
                     println( "331 Guest login ok. Send indent as password");
@@ -282,17 +282,9 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 		}
                 if (username=="anonymous")
 
-		//this.isAuth = new Authenticator().isValidUser(this.username, password); 
                 this.isAuth = true;
                 
-		//if( !isAuth )
-		//{
-			// 비밀번호 틀렸을때는 천천히 응답하기. 
-		//	if( !username.equals("anonymous") )
-		//		Thread.sleep( 3000L );
-		//	println( "530 Login incorrect." );
-		//}
-		//else
+
 		{
 
 			String privateRoot = null;
@@ -301,7 +293,7 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 
 			if( !userRoot.exists() )
 				userRoot.mkdirs();
-			userCurrent = userRoot;
+			userCurrentWokingDirectory = userRoot;
 			println( "230 User " + username + " logged in." );
 		}
                 if (username !="anonymous"){
@@ -358,7 +350,6 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 		{
 			sock = new InetSocketAddress(addr, port);
 			println( "200 EPRT command successful." );
-
 			this.data = DataConnection.createActive(sock);
 			this.data.setFileOffset(restart);
 			this.data.addDataConnectionListener(this);
@@ -429,13 +420,12 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 	protected void processPrintWorkingDirectory() throws Exception
 	{
 		String root = userRoot.getAbsolutePath();
-		String curr = userCurrent.getAbsolutePath();
+		String curr = userCurrentWokingDirectory.getAbsolutePath();
 
 		curr = curr.substring(root.length());
-		if( curr.length()==0 )
+		if( curr.length()==0 ) {
 			curr = "/";
-		curr = curr.replace('\\', '/');
-
+		}
 		println( "257 \"" + curr + "\" is current directory." );
 	}
 
@@ -449,7 +439,7 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 		}
 		else
 		{
-			toChange = new File(userCurrent, param);
+			toChange = new File(userCurrentWokingDirectory, param);
 		}
 
 		if( !toChange.exists() || !toChange.isDirectory() )
@@ -466,13 +456,13 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 			return;
 		}
 
-		this.userCurrent = new File(willChange);
+		this.userCurrentWokingDirectory = new File(willChange);
 		println( "250 CWD command successful" );
 	}
 
 	protected void processNameList() throws Exception 
 	{
-		File[] files = userCurrent.listFiles();
+		File[] files = userCurrentWokingDirectory.listFiles();
 		StringBuilder sb = new StringBuilder();
 		for(File f : files) 
 			sb.append(f.getName()).append("\r\n");
@@ -491,7 +481,7 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 
 	protected void processList() throws Exception
 	{
-		File[] files = userCurrent.listFiles();
+		File[] files = userCurrentWokingDirectory.listFiles();
 		StringBuilder sb = new StringBuilder();
 
 		Calendar cal = Calendar.getInstance();
@@ -566,7 +556,7 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 		if( param.charAt(0)=='/' )
 			f = new File(userRoot, param);
 		else
-			f = new File(userCurrent, param);
+			f = new File(userCurrentWokingDirectory, param);
 
 		if( !f.exists() )
 		{
@@ -590,7 +580,7 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 
 	protected void processStore( String param ) throws Exception
 	{
-		File f = new File(userCurrent, param);
+		File f = new File(userCurrentWokingDirectory, param);
 
 		if( data!=null )
 		{
@@ -602,14 +592,14 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 			println( "552 Requested file action aborted." );
 		}
 	}
-// Repsond to request get File size of client, parameter is a path to file
+
 	protected void processFileSize( String param ) throws Exception
 	{
 		File f = null;
 		if( param.charAt(0)=='/' )
 			f = new File(userRoot, param);
 		else
-			f = new File(userCurrent, param);
+			f = new File(userCurrentWokingDirectory, param);
 
 		if( f.exists() )
 		{
@@ -623,7 +613,7 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 
 	protected void processFileModifiedTime( String param ) throws Exception
 	{
-		File f = new File(userCurrent, param);
+		File f = new File(userCurrentWokingDirectory, param);
 		if( f.exists() )
 		{
 			println( "213 " + fmtStamp.format(f.lastModified()) );
@@ -669,10 +659,8 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 
 	private String getUserPath( File f ) throws IOException
 	{
-		String root = userRoot.getCanonicalPath();
-		String path = f.getCanonicalPath();
 
-		//path = path.substring(root.length()).replace('\\', '/');
+		String path = f.getPath();
 		if( path.charAt(0)!='/' )
 			path = '/' + path;
 		return path;
@@ -684,7 +672,7 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 		if( param.charAt(0)=='/' )
 			f = new File(userRoot, param);
 		else
-			f = new File(userCurrent, param);
+			f = new File(userCurrentWokingDirectory, param);
 
 		if( f.exists() )
 		{
@@ -709,7 +697,7 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 		if( param.charAt(0)=='/' )
 			f = new File(userRoot, param);
 		else
-			f = new File(userCurrent, param);
+			f = new File(userCurrentWokingDirectory, param);
 
 		if( !f.exists() )
 		{
@@ -734,7 +722,7 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 		if( param.charAt(0)=='/' )
 			f = new File(userRoot, param);
 		else
-			f = new File(userCurrent, param);
+			f = new File(userCurrentWokingDirectory, param);
 
 		if( !f.exists() )
 		{
@@ -778,7 +766,7 @@ public class ClientConnectionHandler implements Runnable, OnDataTranferCompleteL
 	public void transferCompleted( boolean hasError )
 	{
 		System.out.println("* Event: transferCompleted: hasError=" + hasError);
-		// FIXME: hasError 처리해야함
+
 		try
 		{
 			if( !hasError )

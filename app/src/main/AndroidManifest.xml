@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -15,27 +15,21 @@
         android:theme="@style/AppTheme">
         <activity android:name=".HttpServerActivity" />
         <activity
-            android:name=".MainActivity"
-            android:label="@string/name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:name=".SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <service
-            android:name=".Service.WebService"
-            android:enabled="true"
-            android:exported="true" />
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/name">
+        </activity>>
 
         <activity android:name=".FtpActivity" />
 
-        <service
-            android:name=".Service.FtpServerService"
-            android:enabled="true"
-            android:exported="true"></service>
+
     </application>
 
 </manifest>

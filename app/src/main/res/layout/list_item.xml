@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/item_frame"
+    android:id="@+id/item_holder"
+    android:background="@drawable/item_background_selector"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     >
-
-    <RelativeLayout
-        android:id="@+id/item_holder"
+<RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingRight="10dp"
@@ -36,13 +35,11 @@
             android:paddingLeft="@dimen/small_margin"
             android:paddingTop="@dimen/small_margin"
             tools:text="Directory"/>
-<LinearLayout
-    android:orientation="vertical"
-    android:layout_below="@+id/item_name"
-    android:layout_toRightOf="@+id/item_icon"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+
     <LinearLayout
+        android:orientation="vertical"
+        android:layout_below="@+id/item_name"
+        android:layout_toRightOf="@+id/item_icon"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <TextView
@@ -65,14 +62,5 @@
         tools:text="101 items"/>
     </LinearLayout>
 
+</RelativeLayout>
 </LinearLayout>
-
-    </RelativeLayout>
-    <LinearLayout
-        android:background="#30696969"
-        android:layout_gravity="bottom"
-        android:layout_width="match_parent"
-        android:gravity="bottom"
-        android:layout_height="1dp">
-    </LinearLayout>
-</FrameLayout>

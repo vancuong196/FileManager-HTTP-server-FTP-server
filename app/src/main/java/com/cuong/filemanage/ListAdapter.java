@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -18,6 +20,16 @@ import java.util.ArrayList;
 
 public class ListAdapter extends ArrayAdapter<FileModel> {
 
+
+    public void setPostionSelected(int postion){
+        getItem(postion).setSelected(true);
+        notifyDataSetChanged();
+    }
+    public void unSetPostionSelected(int postion){
+        getItem(postion).setSelected(false);
+        notifyDataSetChanged();
+    }
+
     public ListAdapter(@NonNull Context context, int resource, @NonNull ArrayList<FileModel> objects) {
         super(context, resource, objects);
     }
@@ -25,9 +37,9 @@ public class ListAdapter extends ArrayAdapter<FileModel> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        // Get the data item for this position
+
+
         FileModel file = getItem(position);
-        // Check if an existing view is being reused, otherwise inflate the view
         View v = convertView;
         if (v == null) {
             LayoutInflater inflater = LayoutInflater.from(getContext());
@@ -35,20 +47,21 @@ public class ListAdapter extends ArrayAdapter<FileModel> {
 
         }
         ImageView img = v.findViewById(R.id.item_icon);
-        TextView tt1 = (TextView) v.findViewById(R.id.item_name);
-        TextView tt2 = (TextView) v.findViewById(R.id.tv_item_time);
-        TextView tt3 = (TextView) v.findViewById(R.id.tv_item_size);
+        TextView tvName = v.findViewById(R.id.item_name);
+        TextView tvTime = v.findViewById(R.id.tv_item_time);
+        TextView tvSize = v.findViewById(R.id.tv_item_size);
+        LinearLayout line = v.findViewById(R.id.item_holder);
+        line.setSelected(true);
 
-
-        if (tt1 != null) {
-            tt1.setText(file.getName());
+        if (tvName != null) {
+            tvName.setText(file.getName());
         }
 
-        if (tt2 != null) {
-            tt2.setText(file.getTime());
+        if (tvTime != null) {
+            tvTime.setText(file.getTime());
         }
-        if (tt3 != null) {
-            tt3.setText(file.extra);
+        if (tvSize != null) {
+            tvSize.setText(file.extra);
         }
        switch (file.getType()){
            case Constants.APP_FILE_TYPE:
@@ -86,4 +99,4 @@ public class ListAdapter extends ArrayAdapter<FileModel> {
         // Return the completed view to render on screen
         return v;
     }
-}
+  }
