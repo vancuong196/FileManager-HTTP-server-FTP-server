@@ -1,67 +1,110 @@
 package com.cuong.filemanage;
 
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Build;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.design.widget.Snackbar;
+import android.os.Handler;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.text.TextUtils;
-import android.util.Log;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
-import android.view.MenuInflater;
-import android.view.View;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
-
-import com.cuong.filemanage.HttpServer.HttpServer;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.regex.Pattern;
 
-import static android.os.Build.VERSION.SDK_INT;
 
 public class MainActivity extends AppCompatActivity {
     String mCurrentPath;
     String mCurrentRoot;
     ListView mLvFile;
+    ArrayList<FileModel> mToDeleteFileList;
+    ArrayList<FileModel> mClipBoardFileList;
+    int clipBoardAction = Constants.CLIPBOARD_ACTION_EMPTY;
     ArrayList<FileModel> mFileList;
     ListAdapter mAdapter;
-    private boolean isAddFour = false;
-    private boolean isRemoveFour = false;
-    String TAG = "DEbug_Info";
+    FloatingActionButton fab;
+    TextView tvPath;
+    ImageView backButton;
+    boolean isExit = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //Toolbar toolbar = findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
-
+        fab = findViewById(R.id.btn_add);
+        tvPath = findViewById(R.id.tv_path);
+        backButton = findViewById(R.id.img_back_button);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                System.out.println(mCurrentPath + "  " + mCurrentRoot);
+                if (mCurrentPath.equals(mCurrentRoot)) {
+                    return;
+                }
+                if (mCurrentPath != null) {
+                    mCurrentPath = new File(mCurrentPath).getParent();
+                    refreshListViewFilesWithPath(mCurrentPath);
+                }
+            }
+        });
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new NewFileDialog(MainActivity.this, mCurrentPath).show();
+            }
+        });
         final SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.sw_layout);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                refresh(mCurrentPath);
+                refreshListViewFilesWithPath(mCurrentPath);
                 swipeRefreshLayout.setRefreshing(false);
             }
         });
-        init();
-        init3();
+        listViewFilesInit();
+        spinnerInit();
     }
-    public void init(){
+
+    public void setmClipBoard(ArrayList<FileModel> fileModels, int clipBoardAction) {
+        this.mClipBoardFileList = fileModels;
+        this.clipBoardAction = clipBoardAction;
+    }
+
+    public int getClipBoardAction() {
+        return clipBoardAction;
+    }
+
+    public ArrayList<FileModel> getmClipBoardFileList() {
+        if (mClipBoardFileList == null) {
+            return new ArrayList<>();
+        } else {
+            return mClipBoardFileList;
+        }
+
+    }
+
+    public void clearClipboard() {
+        mClipBoardFileList = null;
+        this.clipBoardAction = Constants.CLIPBOARD_ACTION_EMPTY;
+    }
+
+    public void listViewFilesInit() {
             mLvFile = findViewById(R.id.lv_file);
             mFileList = FileManager.getFileList( Environment.getExternalStorageDirectory().toString());
             mAdapter =new ListAdapter(this,R.layout.list_item,mFileList);
@@ -72,11 +115,49 @@ public class MainActivity extends AppCompatActivity {
                     if (mAdapter.getItem(position).getType()==Constants.FOLDER_TYPE){
                         System.out.println("debug");
                         mCurrentPath = mAdapter.getItem(position).getPath();
-                        refresh(mAdapter.getItem(position).getPath());
+                        refreshListViewFilesWithPath(mAdapter.getItem(position).getPath());
                     }
                     else {
-                        Snackbar.make(view, "Not support yet!", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
+                        String type = "";
+                        switch (mAdapter.getItem(position).getType()) {
+                            case Constants.APP_FILE_TYPE:
+                                type = "application/vnd.android.package-archive";
+                                break;
+                            case Constants.COMPRESSED_FILE_TYPE:
+                                type = "application/zip";
+                                break;
+                            case Constants.PHOTO_FILE_TYPE:
+                                type = "image";
+                                break;
+                            case Constants.VIDEO_FILE_TYPE:
+                                type = "video";
+                                break;
+                            case Constants.MUSIC_FILE_TYPE:
+                                type = "music";
+                                break;
+                            case Constants.DOCUMENT_FILE_TYPE:
+                                type = "unknown";
+                                break;
+                            case Constants.TEXT_FILE_TYPE:
+                                type = "unknown";
+                                break;
+                            case Constants.OTHER_FILE_TYPE:
+                                type = "unknown";
+                                break;
+                        }
+                        if ("unknown".equals(type)) {
+                            Toast.makeText(getApplication(), "Not supported!", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        try {
+                            Intent intent = new Intent(Intent.ACTION_VIEW);
+                            intent.setDataAndType(Uri.fromFile(new File(mAdapter.getItem(position).getPath())), type);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                        } catch (Exception e) {
+                            Toast.makeText(getApplication(), "Not supported!", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
                     }}
             });
             mLvFile.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
@@ -87,84 +168,54 @@ public class MainActivity extends AppCompatActivity {
                                                       int position, long id, boolean checked) {
                     mode.setTitle(mLvFile.getCheckedItemCount()
                             + " items");
-                    SparseBooleanArray a =mLvFile.getCheckedItemPositions();
-                    if (a.get(position)){
-                        mAdapter.getItem(position).setSelected(true);
-                    } else {
-                        mAdapter.getItem(position).setSelected(false);
-                    }
 
                 }
 
                 @Override
                 public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                    Log.i(TAG, "creating action mode");
                     MenuInflater inflater = mode.getMenuInflater();
-                   // getSupportActionBar().hide();
-                    inflater.inflate(R.menu.cad_menu, menu);
+                    inflater.inflate(R.menu.cab_menu, menu);
                     return true;
                 }
 
                 @Override
                 public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                    Log.i(TAG, "preparing action mode");
-                    if (isAddFour) {
-//                    set menu item Four visible
-                        Log.i(TAG, "adding menu item Four");
-                        menu.findItem(R.id.cab_four).setVisible(true);
-                        return true;
-                    } else if (isRemoveFour) {
-//                    set menu item four invisible
-                        Log.i(TAG, "removing menu item Four");
-                        menu.findItem(R.id.cab_four).setVisible(false);
-
-                        return true;
-                    } else {
-//            return false if nothing is done
-                        return false;
-                    }
+                    return false;
                 }
 
+                private void doCopyAction() {
+                    ArrayList<FileModel> files = getCurrentSelectedFiles();
+                    setmClipBoard(files, Constants.CLIPBOARD_ACTION_COPY);
+                    invalidateOptionsMenu();
+                }
+
+                private void doMoveAction() {
+                    ArrayList<FileModel> files = getCurrentSelectedFiles();
+                    setmClipBoard(files, Constants.CLIPBOARD_ACTION_MOVE);
+                    invalidateOptionsMenu();
+                }
+
+
+                private void doDeleteOption() {
+                    mToDeleteFileList = getCurrentSelectedFiles();
+                    showConfirmDeleteDialog();
+                }
                 //            called to report a user click on an action item
                 @Override
                 public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
 
                     switch (item.getItemId()) {
                         case R.id.cab_copy:
-                            Log.i(TAG, "action item ONE clicked");
-                            doSomethingWithActionOneItems();
-                            // Action picked, so close the CAB
+                            doCopyAction();
                             mode.finish();
                             return true;
                         case R.id.cab_delete:
-                            Log.i(TAG, "action item TWO clicked");
-                            doSomethingWithActionTwoItems();
-                            // Action picked, so close the CAB
+                            doDeleteOption();
                             mode.finish();
                             return true;
-                        case R.id.cab_three:
-                            Log.i(TAG, "clicked item three");
-                            isAddFour = true;
-                            isRemoveFour = false;
-                            //invalidate the action mode and refresh the menu content
-                            mode.invalidate();
-                            return true;
-                        case R.id.sub_one:
-                            Log.i(TAG, "Clicked sub one");
-                            // Action picked, so close the CAB
+                        case R.id.cab_move:
+                            doMoveAction();
                             mode.finish();
-                            return true;
-                        case R.id.sub_two:
-                            Log.i(TAG, "Clicked sub two");
-                            // Action picked, so close the CAB
-                            mode.finish();
-                            return true;
-                        case R.id.cab_four:
-                            Log.i(TAG, "clicked item four");
-                            isRemoveFour = true;
-                            isAddFour = false;
-//                      invalidate the action mode and refresh the menu content
-                            mode.invalidate();
                             return true;
                         default:
                             return false;
@@ -174,16 +225,11 @@ public class MainActivity extends AppCompatActivity {
                 //called when an action mode is about to be exited and destroyed
                 @Override
                 public void onDestroyActionMode(ActionMode mode) {
-                    Log.i(TAG, "destroying action mode");
-                 //   getSupportActionBar().show();
-                    isRemoveFour = false;
-                    isAddFour = false;
                 }
             });
-            System.out.println(getStorageDirectories());
     }
 
-    public void init3(){
+    public void spinnerInit() {
         Spinner spinner = findViewById(R.id.spinner);
         ArrayList<String> s = getStorageDirectories();
         final ArrayAdapter arrayAdapter = new ArrayAdapter(this,R.layout.support_simple_spinner_dropdown_item,s);
@@ -193,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 mCurrentPath= mCurrentRoot = (String)arrayAdapter.getItem(position);
-                refresh((String)arrayAdapter.getItem(position));
+                refreshListViewFilesWithPath((String) arrayAdapter.getItem(position));
             }
 
             @Override
@@ -202,33 +248,65 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
     public synchronized ArrayList<String> getStorageDirectories() {
         File[] list = list = getApplicationContext().getExternalFilesDirs(null);
         ArrayList<String> storages =new ArrayList<>();
         for (File aList : list) {
-            System.out.println("Path----------------" + aList.getParentFile().getParentFile().getParentFile().getParentFile().getPath());
             storages.add(aList.getParentFile().getParentFile().getParentFile().getParentFile().getPath());
         }
         return storages;
     }
 
+    public ArrayList<FileModel> getCurrentSelectedFiles() {
+        SparseBooleanArray checked = mLvFile.getCheckedItemPositions();
+        ArrayList<FileModel> files = new ArrayList<>();
+        for (int i = 0; i < checked.size(); i++) {
+            if (checked.valueAt(i) == true) {
+                FileModel file = (FileModel) mLvFile.getItemAtPosition(checked.keyAt(i));
+                files.add(file);
+            }
+        }
+        return files;
+    }
 
-    public void refresh(String path) {
+    public void refreshListViewFilesWithPath(String path) {
+        tvPath.setText(path);
         mCurrentPath = path;
         mFileList = FileManager.getFileList(path);
         mAdapter.clear();
         mAdapter.addAll(mFileList);
         mAdapter.notifyDataSetChanged();
     }
+
+    public void refreshListView() {
+        mFileList = FileManager.getFileList(mCurrentPath);
+        mAdapter.clear();
+        mAdapter.addAll(mFileList);
+        mAdapter.notifyDataSetChanged();
+    }
+
     @Override
     public void onBackPressed() {
         System.out.println(mCurrentPath+"  "+mCurrentRoot);
         if (mCurrentPath.equals(mCurrentRoot)){
+            if (isExit) {
+                finish();
+            } else {
+                isExit = true;
+                Toast.makeText(getApplicationContext(), "Press again to exit", Toast.LENGTH_SHORT).show();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        isExit = false;
+                    }
+                }, 2000);
+            }
             return;
         }
         if (mCurrentPath!=null){
             mCurrentPath = new File(mCurrentPath).getParent();
-            refresh(mCurrentPath);
+            refreshListViewFilesWithPath(mCurrentPath);
         }
     }
 
@@ -236,7 +314,15 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main2, menu);
-        return true;
+        if (getmClipBoardFileList().size() == 0) {
+            menu.findItem(R.id.action_paste).setVisible(false);
+            menu.findItem(R.id.action_clipboard_clear).setVisible(false);
+        } else {
+            menu.findItem(R.id.action_paste).setVisible(true);
+            menu.findItem(R.id.action_clipboard_clear).setVisible(true);
+        }
+
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -253,37 +339,166 @@ public class MainActivity extends AppCompatActivity {
             return true;
         } else if (id ==R.id.action_exit){
             finish();
-        }
-        else if (id == R.id.action_ftp_server) {
+        } else if (id == R.id.action_ftp_server) {
             Intent myIntent = new Intent(this,FtpActivity.class);
             startActivity(myIntent);
+        } else if (id == R.id.action_paste) {
+            if (getClipBoardAction() == Constants.CLIPBOARD_ACTION_COPY) {
+
+                copyFilesFromClipboardToPath(getmClipBoardFileList(), mCurrentPath);
+                clearClipboard();
+                invalidateOptionsMenu();
+            } else if (getClipBoardAction() == Constants.CLIPBOARD_ACTION_MOVE) {
+                moveFilesFromClipboardToPath(getmClipBoardFileList(), mCurrentPath);
+                clearClipboard();
+                invalidateOptionsMenu();
+            }
+        } else if (id == R.id.action_clipboard_clear) {
+            clearClipboard();
+            invalidateOptionsMenu();
+
         }
         return super.onOptionsItemSelected(item);
     }
 
+    private void showConfirmDeleteDialog() {
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
 
-    private void doSomethingWithActionTwoItems() {
-        Log.i(TAG, "getting action two items");
-        SparseBooleanArray checked = mLvFile.getCheckedItemPositions();
-        for (int i = 0; i < checked.size(); i++) {
-            if (checked.valueAt(i) == true) {
-                String theSelectedCountry = (String) mLvFile
-                        .getItemAtPosition(checked.keyAt(i));
-                Log.i(TAG, "Selected country key: " + checked.keyAt(i) + " country: " + theSelectedCountry);
+                //set title
+                .setTitle("Are you sure to delete?")
+                //set message
+                .setMessage("You won't able to use it anymore")
+                //set positive button
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        deleteFiles(mToDeleteFileList);
+                        return;
+                    }
+                })
+                //set negative button
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        mToDeleteFileList = null;
+                        return;
+                    }
+                })
+                .show();
+    }
+
+    public void deleteFiles(ArrayList<FileModel> files) {
+        new DeleteFileTask().execute(files);
+    }
+
+    public void copyFilesFromClipboardToPath(ArrayList<FileModel> files, String destinationPath) {
+        ArrayList<String> filePaths = new ArrayList<>();
+        ArrayList<String> destinationPaths = new ArrayList<>();
+        destinationPaths.add(destinationPath);
+        for (FileModel item : files
+                ) {
+            filePaths.add(item.getPath());
+        }
+        new CopyFileTask().execute(filePaths, destinationPaths);
+    }
+
+    public void moveFilesFromClipboardToPath(ArrayList<FileModel> files, String destinationPath) {
+        ArrayList<String> filePaths = new ArrayList<>();
+        ArrayList<String> destinationPaths = new ArrayList<>();
+        destinationPaths.add(destinationPath);
+        for (FileModel item : files
+                ) {
+            filePaths.add(item.getPath());
+        }
+        new MoveFileTask().execute(filePaths, destinationPaths);
+    }
+
+    private class DeleteFileTask extends AsyncTask<ArrayList<FileModel>, Void, Boolean> {
+
+
+        @Override
+        protected Boolean doInBackground(ArrayList<FileModel>[] arrayLists) {
+            ArrayList<FileModel> files = arrayLists[0];
+            for (FileModel item : files
+                    ) {
+                System.out.println(item.getPath());
+                FileManager.deleteDirectory(new File(item.getPath()));
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            Toast.makeText(getApplicationContext(), "Delected!", Toast.LENGTH_SHORT).show();
+            refreshListViewFilesWithPath(mCurrentPath);
+        }
+    }
+
+    private class CopyFileTask extends AsyncTask<ArrayList<String>, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(ArrayList<String>[] arrayLists) {
+            ArrayList<String> filePaths = arrayLists[0];
+            String destination = arrayLists[1].get(0);
+            for (int i = 0; i < filePaths.size(); i++) {
+                try {
+                    FileManager.copyDirectory(new File(filePaths.get(i)), new File(destination));
+                } catch (Exception e) {
+                    System.out.println(e.toString());
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            if (aBoolean) {
+                refreshListViewFilesWithPath(mCurrentPath);
+                Toast.makeText(getApplicationContext(), "Copy files completed!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "Copy files error!", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    private void doSomethingWithActionOneItems() {
-        Log.i(TAG, "getting action one items");
-        mLvFile.getCheckedItemIds();
-        SparseBooleanArray checked = mLvFile.getCheckedItemPositions();
-        for (int i = 0; i < checked.size(); i++) {
-            if (checked.valueAt(i) == true) {
-                String theSelectedCountry = (String) mLvFile
-                        .getItemAtPosition(checked.keyAt(i));
-                Log.i(TAG, "Selected country key: " + checked.keyAt(i) + " country: " + theSelectedCountry);
+    private class MoveFileTask extends AsyncTask<ArrayList<String>, Void, Boolean> {
+        ArrayList<String> filePaths;
+
+        @Override
+        protected Boolean doInBackground(ArrayList<String>[] arrayLists) {
+            filePaths = arrayLists[0];
+            String destination = arrayLists[1].get(0);
+            for (int i = 0; i < filePaths.size(); i++) {
+                try {
+                    FileManager.copyDirectory(new File(filePaths.get(i)), new File(destination));
+                } catch (Exception e) {
+                    System.out.println(e.toString());
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            if (aBoolean) {
+                for (int i = 0; i < filePaths.size(); i++) {
+                    try {
+                        FileManager.deleteDirectory(new File(filePaths.get(i)));
+                    } catch (Exception e) {
+                        System.out.println(e.toString());
+                    }
+                }
+                if (getApplicationContext() != null) {
+                    Toast.makeText(getApplicationContext(), "Move file complete files completed!", Toast.LENGTH_SHORT).show();
+                    refreshListViewFilesWithPath(mCurrentPath);
+                }
+            } else {
+                if (getApplicationContext() != null)
+                    Toast.makeText(getApplicationContext(), "Move files error!", Toast.LENGTH_SHORT).show();
             }
         }
     }
+
 }

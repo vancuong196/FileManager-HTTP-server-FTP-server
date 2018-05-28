@@ -24,10 +24,6 @@ public class SplashScreen extends AppCompatActivity {
             if (!checkIfHavePermisson()) {
                 requestForPermission();
             } else {
-
-              //  if (new SongController(getApplicationContext()).count() == 0) {
-            //        new SongScanner(this).scan();
-            //    }
                 startMainActivity();
             }
         }
@@ -43,13 +39,13 @@ public class SplashScreen extends AppCompatActivity {
                 SplashScreen.this.startActivity(mainIntent);
                 SplashScreen.this.finish();
             }
-        }, 3000);
+        }, 2000);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == 1010) {
-            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED || grantResults[1] != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "This application need READ_EXTERNAL_STORAGE permission to work correctly!", Toast.LENGTH_LONG).show();
                 new Handler().postDelayed(new Runnable() {
                     @Override
@@ -59,28 +55,24 @@ public class SplashScreen extends AppCompatActivity {
                 }, 3000);
 
             } else {
-              //  if (new SongController(getApplicationContext()).count() == 0) {
-             //       new SongScanner(this).scan();
-
-        //        }
                 startMainActivity();
             }
 
         } else {
-
-
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
     private boolean checkIfHavePermisson() {
-        int result = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-        return result == PackageManager.PERMISSION_GRANTED;
+        int result1 = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int result2 = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+        return result1 == PackageManager.PERMISSION_GRANTED && result2 == PackageManager.PERMISSION_GRANTED;
     }
 
     private void requestForPermission() {
 
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1010);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, 1010);
+
     }
 
 }

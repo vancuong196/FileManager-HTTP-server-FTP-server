@@ -15,6 +15,9 @@ public class Constants {
     public static final int PDF_FILE_TYPE =8;
     public static final int DOCUMENT_FILE_TYPE =9;
     public static final int OTHER_FILE_TYPE =10;
+    public static final int CLIPBOARD_ACTION_COPY = 11;
+    public static final int CLIPBOARD_ACTION_MOVE = 12;
+    public static final int CLIPBOARD_ACTION_EMPTY = 13;
 
 
 

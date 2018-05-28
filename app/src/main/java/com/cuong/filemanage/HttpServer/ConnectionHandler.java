@@ -25,6 +25,26 @@ public class ConnectionHandler extends Thread {
     BufferedReader in;
     PrintStream out;
     ConnectionManager mConnectionManager;
+
+    public ConnectionHandler(Socket sk) {
+        this.mConnection = sk;
+        mConnectionManager = ConnectionManager.getInstance();
+
+        try {
+            in = new BufferedReader(new InputStreamReader(sk.getInputStream()));
+        } catch (IOException e) {
+            Log.log("Can't get input stream" + e.toString());
+        }
+
+        try {
+            out = new PrintStream(sk.getOutputStream());
+
+        } catch (IOException e) {
+            Log.log("Can't get output stream" + e.toString());
+        }
+
+    }
+
     @Override
     public void run() {
 
@@ -54,11 +74,10 @@ public class ConnectionHandler extends Thread {
                         break;
                     }
                     else {
-                        byte[] bytes = loadContent("/"+directory);
+
                         // Send out the content.
                         out.println("HTTP/1.0 200 OK");
                         out.println("Content-Type: " + "application/octet-stream");
-                        out.println("Content-Length: " + bytes.length);
                         writeFileToStream(out,"/"+directory);
                         out.flush();
                         break;
@@ -78,15 +97,6 @@ public class ConnectionHandler extends Thread {
 
     }
 
-    private byte[] loadContent(String fileName) throws IOException {
-        File file = new File(fileName);
-        byte[] fileData = new byte[(int) file.length()];
-        DataInputStream dis = new DataInputStream(new FileInputStream(file));
-        dis.readFully(fileData);
-        dis.close();
-        System.out.println("File lenght" +fileName.length());
-        return fileData;
-    }
     public void writeFileToStream(PrintStream out, String fileName) throws IOException {
         File file = new File(fileName);
         byte[] fileData = new byte[1024];
@@ -102,25 +112,8 @@ public class ConnectionHandler extends Thread {
         System.out.println("File lenght" +fileName.length());
 
     }
-    public ConnectionHandler(Socket sk) {
-        this.mConnection = sk;
-        mConnectionManager = ConnectionManager.getInstance();
-        
-        try {
-        in = new BufferedReader(new InputStreamReader(sk.getInputStream()));
-        } catch (IOException e){
-            Log.log("Can't get input stream"+e.toString());
-        }
-        
-        try {
-        out = new PrintStream(sk.getOutputStream());
-        
-        } catch ( IOException e){
-            Log.log("Can't get output stream"+e.toString());
-        }
-        
-    }
-   public void send(String message) {
+
+    public void send(String message) {
        out.println(message);
        
    }

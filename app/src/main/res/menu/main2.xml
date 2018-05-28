@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-
     <item
-        android:id="@+id/action_showhiden"
+        android:id="@+id/action_paste"
+        android:icon="@drawable/paste_file_icon"
         android:orderInCategory="100"
-        android:title="Settings"
+        android:title="paste"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_clipboard_clear"
+        android:orderInCategory="100"
+        android:title="Clear clipboard"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_http_server"

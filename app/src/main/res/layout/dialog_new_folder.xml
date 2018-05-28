@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="300dp"
+    android:layout_height="200dp"
+    android:layout_gravity="center">
+
+    <LinearLayout
+        android:layout_width="300dp"
+        android:layout_height="200dp"
+        android:background="#20696969"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp">
+
+        <TextView
+            android:id="@+id/tv_dialog_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Enter name :"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/edt_folder_name"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="57dp"
+            android:layout_marginTop="15dp"
+            android:gravity="center">
+
+            <Button
+
+                android:id="@+id/btn_dialog_ok"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/btn_dialog_cancel"
+                android:layout_alignBottom="@+id/btn_dialog_cancel"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/item_background_selector"
+                android:text="Ok" />
+
+            <Button
+                android:id="@+id/btn_dialog_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:background="@drawable/item_background_selector"
+                android:text="Cancel" />
+        </RelativeLayout>
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

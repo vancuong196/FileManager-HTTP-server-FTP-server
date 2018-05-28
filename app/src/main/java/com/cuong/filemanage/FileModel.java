@@ -10,16 +10,6 @@ public class FileModel {
     String path;
     String time;
     String extra;
-    boolean isSelected;
-
-    public boolean isSelected() {
-        return isSelected;
-    }
-
-    public void setSelected(boolean selected) {
-        isSelected = selected;
-    }
-
     public FileModel(int type, String name, String path, String time, String extra) {
         this.type = type;
         this.name = name;

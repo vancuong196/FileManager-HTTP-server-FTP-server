@@ -3,64 +3,80 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item_holder"
-    android:background="@drawable/item_background_selector"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/item_background_selector"
     >
-<RelativeLayout
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingRight="10dp"
+        android:layout_height="match_parent"
+        android:paddingBottom="6dp"
         android:paddingLeft="10dp"
-        android:paddingTop="3dp"
-        android:paddingBottom="3dp"
-        >
+        android:paddingRight="10dp"
+        android:paddingTop="6dp">
 
         <ImageView
-            android:background="@drawable/round"
             android:id="@+id/item_icon"
-            android:layout_width="@dimen/normal_icon_size"
-            android:layout_height="@dimen/normal_icon_size"
-            android:padding="@dimen/small_margin"
-            android:src="@drawable/folder_icon"/>
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/round"
+            android:padding="10dp"
+            android:src="@drawable/folder_icon" />
 
         <TextView
             android:id="@+id/item_name"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignTop="@+id/item_icon"
             android:layout_toRightOf="@+id/item_icon"
             android:ellipsize="end"
             android:maxLines="1"
-            android:paddingLeft="@dimen/small_margin"
+            android:paddingLeft="10dp"
             android:paddingTop="@dimen/small_margin"
-            tools:text="Directory"/>
+            android:textSize="15dp"
+            tools:text="Directory" />
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_below="@+id/item_name"
-        android:layout_toRightOf="@+id/item_icon"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <TextView
-            android:layout_weight="1"
-            android:id="@+id/tv_item_time"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/small_margin"
-            android:textSize="@dimen/smaller_text_size"
-            tools:text="Feb 26, 22:44"/>
-    <TextView
-        android:gravity="right"
-        android:paddingRight="@dimen/medium_margin"
-        android:layout_weight="1"
-        android:id="@+id/tv_item_size"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingLeft="@dimen/small_margin"
-        android:textSize="@dimen/smaller_text_size"
-        tools:text="101 items"/>
-    </LinearLayout>
+            android:layout_below="@+id/item_name"
+            android:layout_toRightOf="@+id/item_icon"
+            android:orientation="vertical"
+            android:paddingLeft="10dp">
 
-</RelativeLayout>
+            <TextView
+                android:id="@+id/tv_item_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingLeft="@dimen/small_margin"
+                android:textSize="@dimen/smaller_text_size"
+                tools:text="Feb 26, 22:44" />
+
+            <TextView
+                android:id="@+id/tv_item_size"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="left"
+                android:paddingLeft="@dimen/small_margin"
+                android:paddingRight="@dimen/medium_margin"
+                android:textSize="@dimen/smaller_text_size"
+                tools:text="101 items" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/item_menu"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/item_background_selector"
+            android:focusable="false"
+            android:scaleType="fitXY"
+            android:scaleX="0.5"
+            android:scaleY="0.5"
+            android:src="@drawable/ic_menu" />
+    </RelativeLayout>
 </LinearLayout>

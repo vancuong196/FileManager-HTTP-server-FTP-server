@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_item_copy"
+        android:title="Copy"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_item_move"
+        android:title="Move"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_item_delete"
+        android:title="Delete"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_item_rename"
+        android:title="Rename"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_item_info"
+        android:title="Info"
+        app:showAsAction="always" />
+
+</menu>
